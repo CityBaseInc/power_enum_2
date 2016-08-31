@@ -6,7 +6,7 @@
 
 Gem::Specification.new do |s|
   s.name = "power_enum"
-  s.version = "2.9.1"
+  s.version = "2.9.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib"]
@@ -51,12 +51,14 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<yard>, [">= 0"])
       s.add_development_dependency(%q<rspec>, ["~> 3.1"])
       s.add_development_dependency(%q<sqlite3>, [">= 0"])
+      s.add_development_dependency(%q<gemfury>)
     else
       s.add_dependency(%q<rails>, [">= 4.2"])
       s.add_dependency(%q<jeweler>, [">= 0"])
       s.add_dependency(%q<yard>, [">= 0"])
       s.add_dependency(%q<rspec>, ["~> 3.1"])
       s.add_dependency(%q<sqlite3>, [">= 0"])
+      s.add_dependency(%q<gemfury>)
     end
   else
     s.add_dependency(%q<rails>, [">= 4.2"])
@@ -64,6 +66,6 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<yard>, [">= 0"])
     s.add_dependency(%q<rspec>, ["~> 3.1"])
     s.add_dependency(%q<sqlite3>, [">= 0"])
+    s.add_dependency(%q<gemfury>)
   end
 end
-
