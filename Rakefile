@@ -52,3 +52,9 @@ namespace :version do
 
 end
 
+Rake::Task['release'].clear
+
+desc "Tag and release to gemfury under the 'citybase' organization"
+task 'release' => 'release:source_control_push'  do
+  Rake::Task['fury:release'].invoke('power_enum.gemspec', 'citybase')
+end
