@@ -1,3 +1,4 @@
+require "gemfury/tasks"
 begin
   require "jeweler"
   Jeweler::Tasks.new do |gem|
