@@ -96,7 +96,7 @@ describe 'acts_as_enumerated' do
           status.name_sym.should == :confirmed
         end
 
-        it 'returns a record found by id when Fixnum is passed' do
+        it 'returns a record found by id when Integer is passed' do
           status = BookingStatus[1]
           status.should be_an_instance_of BookingStatus
           status.__enum_name__.should == 'confirmed'
@@ -120,7 +120,7 @@ describe 'acts_as_enumerated' do
           state.name_sym.should == :IL
         end
 
-        it 'returns a record found by id when Fixnum is passed' do
+        it 'returns a record found by id when Integer is passed' do
           state = State[1]
           state.should be_an_instance_of State
           state.state_code.should == 'IL'
@@ -169,7 +169,7 @@ describe 'acts_as_enumerated' do
           expect { State[:XXX] }.to raise_error ActiveRecord::RecordNotFound
         end
 
-        it 'raises if Fixnum is passed' do
+        it 'raises if Integer is passed' do
           expect { State[999_999] }.to raise_error ActiveRecord::RecordNotFound
         end
 
@@ -372,7 +372,7 @@ describe 'acts_as_enumerated' do
   end
 
   describe 'in?' do
-    it 'in? should find by Symbol, String, or Fixnum' do
+    it 'in? should find by Symbol, String, or Integer' do
       [1, :IL, 'IL'].each do |arg|
         State[:IL].in?(arg).should eq(true)
       end
@@ -455,10 +455,14 @@ describe 'acts_as_enumerated' do
       BookingStatus.enumeration_model_updates_permitted = false
     end
 
+    after :each do
+      BookingStatus.enumeration_model_updates_permitted = false
+    end
+
     it 'Should not permit the creation of new enumeration models by default' do
-      bs = BookingStatus.create(:name => 'unconfirmed')
-      bs.new_record?.should == true
-      bs.save.should == false
+      bs = BookingStatus.new(:name => 'unconfirmed'); puts "save: #{bs.save}"
+      expect(bs.new_record?).to eq(true)
+      expect(bs.save).to eq(false)
     end
 
     it 'Should not permit the creation of an enumeration model with a blank name' do
@@ -541,6 +545,20 @@ describe 'acts_as_enumerated' do
 
     it 'should return names if there is no :name alias' do
       Fruit.names.should == [:apple, :peach, :pear]
+    end
+  end
+
+  describe 'all_except' do
+    it "should filter out one item (Symbol)" do
+      expect(ConnectorType.all_except(:VGA)).to match_array(ConnectorType[:HDMI, :DVI])
+    end
+
+    it "should filter out one item (Enum)" do
+      expect(ConnectorType.all_except(ConnectorType[:VGA])).to match_array(ConnectorType[:HDMI, :DVI])
+    end
+
+    it "should filter out multiple items" do
+      expect(ConnectorType.all_except(:VGA, :DVI)).to match_array([ConnectorType[:HDMI]])
     end
   end
 
