@@ -125,17 +125,7 @@ module PowerEnum::HasEnumerated
     def create_ar_reflection(part_id, options)
       reflection = PowerEnum::Reflection::EnumerationReflection.new(part_id, options, self)
 
-      # ActiveRecord >= 4.1 handles this differently.
-      if self.respond_to? :_reflections=
-        if Rails.version =~ /^4\.2.*/ || Rails.version =~ /5.*/
-          self._reflections = self._reflections.merge(part_id.to_s => reflection)
-        else
-          self._reflections = self._reflections.merge(part_id => reflection)
-        end
-
-      else
-        self.reflections = self.reflections.merge(part_id => reflection)
-      end
+      self._reflections = self._reflections.merge(part_id.to_s => reflection)
       reflection
     end
     private :create_ar_reflection
@@ -172,14 +162,14 @@ module PowerEnum::HasEnumerated
             val = #{class_name}.lookup_name(arg)
           when Symbol
             val = #{class_name}.lookup_name(arg.id2name)
-          when Fixnum
+          when Integer
             val = #{class_name}.lookup_id(arg)
           when nil
             self.#{foreign_key} = nil
             @invalid_enum_values.delete :#{attribute_name}
             return nil
           else
-            raise TypeError, "#{self.name}: #{attribute_name}= argument must be a #{class_name}, String, Symbol or Fixnum but got a: \#{arg.class.attribute_name}"
+            raise TypeError, "#{self.name}: #{attribute_name}= argument must be a #{class_name}, String, Symbol or Integer but got a: \#{arg.class.attribute_name}"
           end
 
           if val.nil?

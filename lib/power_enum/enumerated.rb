@@ -25,8 +25,8 @@ module PowerEnum::Enumerated
     #   Specifies the name of a class method to invoke when the +[]+ method is unable to locate a BookingStatus
     #   record for arg. The default is the built-in :enforce_none which returns nil. There are also built-ins for
     #   :enforce_strict (raise and exception regardless of the type for arg), :enforce_strict_literals (raises an
-    #   exception if the arg is a Fixnum or Symbol), :enforce_strict_ids (raises and exception if the arg is a
-    #   Fixnum) and :enforce_strict_symbols (raises an exception if the arg is a Symbol).  The purpose of the
+    #   exception if the arg is a Integer or Symbol), :enforce_strict_ids (raises and exception if the arg is a
+    #   Integer) and :enforce_strict_symbols (raises an exception if the arg is a Symbol).  The purpose of the
     #   :on_lookup_failure option is that a) under some circumstances a lookup failure is a Bad Thing and action
     #   should be taken, therefore b) a fallback action should be easily configurable.  You can also give it a
     #   lambda that takes in a single argument (The arg that was passed to +[]+).
@@ -126,6 +126,7 @@ module PowerEnum::Enumerated
         before_save :enumeration_model_update
         before_destroy :enumeration_model_update
         validates acts_enumerated_name_column, :presence => true, :uniqueness => true
+        validate :validate_enumeration_model_updates_permitted
 
         define_method :__enum_name__ do
           read_attribute(acts_enumerated_name_column).to_s
@@ -193,6 +194,11 @@ module PowerEnum::Enumerated
       all.map { |item| item.name_sym }
     end
 
+    # Returns all except for the given list
+    def all_except(*excluded)
+      all.find_all { |item| !(item === excluded) }
+    end
+
     # Enum lookup by Symbol, String, or id.  Returns <tt>arg<tt> if arg is
     # an enum instance.  Passing in a list of arguments returns a list of
     # enums.  When called with no arguments, returns nil.
@@ -218,7 +224,7 @@ module PowerEnum::Enumerated
         !!lookup_name(arg.id2name)
       when String
         !!lookup_name(arg)
-      when Fixnum
+      when Integer
         !!lookup_id(arg)
       when self
         true
@@ -244,7 +250,7 @@ module PowerEnum::Enumerated
         !lookup_name(arg.id2name).nil?
       when String
         !lookup_name(arg).nil?
-      when Fixnum
+      when Integer
         !lookup_id(arg).nil?
       when self
         possible_match = lookup_id(arg.id)
@@ -322,7 +328,7 @@ module PowerEnum::Enumerated
         lookup_name(arg.id2name)
       when String
         lookup_name(arg)
-      when Fixnum
+      when Integer
         lookup_id(arg)
       when self
         arg
@@ -330,7 +336,7 @@ module PowerEnum::Enumerated
         nil
       else
         raise TypeError, "#{self.name}[]: argument should"\
-                         " be a String, Symbol or Fixnum but got a: #{arg.class.name}"
+                         " be a String, Symbol or Integer but got a: #{arg.class.name}"
       end
     end
     private :lookup_enum_by_type
@@ -390,13 +396,13 @@ module PowerEnum::Enumerated
     private :enforce_strict
 
     def enforce_strict_literals(arg) # :nodoc:
-      raise_record_not_found(arg) if (Fixnum === arg) || (Symbol === arg)
+      raise_record_not_found(arg) if (Integer === arg) || (Symbol === arg)
       nil
     end
     private :enforce_strict_literals
 
     def enforce_strict_ids(arg) # :nodoc:
-      raise_record_not_found(arg) if Fixnum === arg
+      raise_record_not_found(arg) if Integer === arg
       nil
     end
     private :enforce_strict_ids
@@ -421,7 +427,7 @@ module PowerEnum::Enumerated
     # Behavior depends on the type of +arg+.
     #
     # * If +arg+ is +nil+, returns +false+.
-    # * If +arg+ is an instance of +Symbol+, +Fixnum+ or +String+, returns the result of +BookingStatus[:foo] == BookingStatus[arg]+.
+    # * If +arg+ is an instance of +Symbol+, +Integer+ or +String+, returns the result of +BookingStatus[:foo] == BookingStatus[arg]+.
     # * If +arg+ is an +Array+, returns +true+ if any member of the array returns +true+ for +===(arg)+, +false+ otherwise.
     # * In all other cases, delegates to +===(arg)+ of the superclass.
     #
@@ -439,7 +445,7 @@ module PowerEnum::Enumerated
       case arg
       when nil
         false
-      when Symbol, String, Fixnum
+      when Symbol, String, Integer
         return self == self.class[arg]
       when Array
         return self.in?(*arg)
@@ -489,16 +495,25 @@ module PowerEnum::Enumerated
     # and rather than completely disallow changes I make you jump
     # through an extra hoop just in case you're defining your enumeration
     # values in Migrations.  I.e. set enumeration_model_updates_permitted = true
-    def enumeration_model_update
+    private def enumeration_model_update
       if self.class.enumeration_model_updates_permitted
         self.class.purge_enumerations_cache
         true
       else
         # Ugh.  This just seems hack-ish.  I wonder if there's a better way.
-        self.errors.add(self.class.name_column, "changes to acts_as_enumeration model instances are not permitted")
-        false
+        if Rails.version =~ /^4\.2\.*/
+          false
+        else
+          throw(:abort)
+        end
       end
     end
-    private :enumeration_model_update
+
+    # Validates that model updates are enabled.
+    private def validate_enumeration_model_updates_permitted
+      unless self.class.enumeration_model_updates_permitted
+        self.errors.add(self.class.name_column, "changes to acts_as_enumeration model instances are not permitted")
+      end
+    end
   end # module EnumInstanceMethods
 end # module PowerEnum::Enumerated

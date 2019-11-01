@@ -6,11 +6,12 @@ https://github.com/albertosaurus/power_enum_2
 [![Code Climate](https://codeclimate.com/github/albertosaurus/power_enum_2.png)](https://codeclimate.com/github/albertosaurus/power_enum_2)
 [![Gem Version](https://badge.fury.io/rb/power_enum.png)](http://badge.fury.io/rb/power_enum)
 
-Enumerations for Rails 4.X Done Right.
+Enumerations for Rails Done Right.
 
 ## Versions
 
-* PowerEnum 2.X (this version) supports Rails 4.X
+* PowerEnum 3.X (this version) supports Rails 4.2 and Rails 5.X
+* PowerEnum 2.X supports Rails 4.X and Rails 5.0
 * PowerEnum 1.X supports Rails 3.1/3.2, available here: https://github.com/albertosaurus/power_enum
 
 ## What is this?:
@@ -50,10 +51,15 @@ See "How to use it" below for more information.
 
 ## Requirements
 
+### PowerEnum 3.X
+
+* Ruby 2.1 or later (JRuby should work but isn't extensively tested; Travis is being difficult).
+* Rails 4.2, 5.0, 5.1
+
 ### PowerEnum 2.X
 
 * Ruby 1.9.3, 2.0, JRuby 1.7+ (Ruby 1.9.3 or 2.0 required for development)
-* Rails 4.0
+* Rails 4.0, 4.1, 4.2, 5.0
 
 ## Installation
 
@@ -307,13 +313,13 @@ With that, your BookingStatus class will have the following methods defined:
 
 `BookingStatus[arg]` performs a lookup for the BookingStatus instance for the given arg. The arg value can be a
 'string' or a :symbol, in which case the lookup will be against the BookingStatus.name field. Alternatively arg can be
-a Fixnum, in which case the lookup will be against the BookingStatus.id field. It returns the arg if arg is an
+a Integer, in which case the lookup will be against the BookingStatus.id field. It returns the arg if arg is an
 instance of the enum (in this case BookingStatus) as a convenience.
 
 The `:on_lookup_failure` option specifies the name of a *class* method to invoke when the `[]` method is unable to
 locate a BookingStatus record for arg. The default is the built-in `:enforce_none` which returns nil. There are also
 built-ins for `:enforce_strict` (raise and exception regardless of the type for arg), `:enforce_strict_literals` (raises
-an exception if the arg is a Fixnum or Symbol), `:enforce_strict_ids` (raises and exception if the arg is a Fixnum) and
+an exception if the arg is a Integer or Symbol), `:enforce_strict_ids` (raises and exception if the arg is a Integer) and
 `:enforce_strict_symbols` (raises an exception if the arg is a Symbol).
 
 The purpose of the `:on_lookup_failure` option is that a) under some circumstances a lookup failure is a Bad Thing and
@@ -334,6 +340,10 @@ other value.
 
 `BookingStatus.all` returns an array of all BookingStatus records that match the `:conditions` specified in
 `acts_as_enumerated`, in the order specified by `:order`.
+
+##### all_except(*items)
+
+`BookingStatus.all_except(arg1, arg2)` returns an array of all BookingStatus records with the given items filtered out.
 
 ##### active
 
@@ -388,7 +398,7 @@ Each enumeration model gets the following instance methods.
 Behavior depends on the type of `arg`.
 
 * If `arg` is `nil`, returns `false`.
-* If `arg` is an instance of `Symbol`, `Fixnum` or `String`, returns the result of `BookingStatus[:foo] == BookingStatus[arg]`.
+* If `arg` is an instance of `Symbol`, `Integer` or `String`, returns the result of `BookingStatus[:foo] == BookingStatus[arg]`.
 * If `arg` is an `Array`, returns `true` if any member of the array returns `true` for `===(arg)`, `false` otherwise.
 * In all other cases, delegates to `===(arg)` of the superclass.
 
@@ -802,7 +812,7 @@ Go back to gem root directory:
 * Initial Version Copyright (c) 2005 Trevor Squires
 * Rails 3 Updates Copyright (c) 2010 Pivotal Labs
 * Initial Test Suite Copyright (c) 2011 Sergey Potapov
-* Subsequent Updates Copyright (c) 2011-2013 Arthur Shagall
+* Subsequent Updates Copyright (c) 2011-2016 Arthur Shagall
 
 Released under the MIT License. See the LICENSE file for more details.
 
