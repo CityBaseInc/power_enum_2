@@ -8,7 +8,9 @@ module PowerEnum::Schema
 
     def self.included(base) # :nodoc:
       base::AbstractAdapter.class_eval do
-        include PowerEnum::Schema::AbstractAdapter
+        # This squashes the "#create_enum" in the PostgreSQL adapter in Rails 7+.
+        # .../activerecord-7.0.X.Y/lib/active_record/connection_adapters/postgresql_adapter.rb
+        prepend PowerEnum::Schema::AbstractAdapter
       end
     end
 
@@ -92,7 +94,7 @@ module PowerEnum::Schema
       desc_limit = options[:desc_limit]
       table_options = options[:table_options] || {}
 
-      create_table enum_table_name, table_options do |t|
+      create_table enum_table_name, **table_options do |t|
         t.string name_column, :limit => name_limit, :null => false
         if generate_description
           t.string :description, :limit => desc_limit
