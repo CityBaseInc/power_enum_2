@@ -154,12 +154,12 @@ describe 'has_enumerated' do
       end
 
       it 'does not call :on_lookup_failure method on assignment when nil is passed' do
-        @booking.should_receive(:status_id=).with(nil)
+        @booking.should_receive(:write_attribute).with(:status_id, nil)
         @booking.status = nil
       end
 
       it 'does not call :on_lookup_failure method on assignment when empty string is passed, converting it to nil' do
-        @booking.should_receive(:status_id=).with(nil)
+        @booking.should_receive(:write_attribute).with(:status_id, nil)
         @booking.status = ''
       end
 
