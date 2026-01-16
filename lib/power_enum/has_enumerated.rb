@@ -106,6 +106,10 @@ module PowerEnum
 
         define_enum_accessor attribute_name, class_name, foreign_key, failure_handler
         define_enum_writer attribute_name, class_name, foreign_key, failure_handler, allow_empty_name
+        
+        # tell Rails that the enum attribute should map to the foreign key column in queries
+        # this fixes a Rails 7.2.2.2 compatibility issue for active record queries
+        alias_attribute attribute_name.to_sym, foreign_key.to_sym
 
         if failure_opt.to_s == 'validation_error'
           define_validation_error(attribute_name)
@@ -169,7 +173,7 @@ module PowerEnum
           when Integer
             val = #{class_name}.lookup_id(arg)
           when nil
-            self.#{foreign_key} = nil
+            write_attribute(:#{foreign_key}, nil)
             @invalid_enum_values.delete :#{attribute_name}
             return nil
           else
@@ -185,7 +189,7 @@ module PowerEnum
             end
           else
             @invalid_enum_values.delete :#{attribute_name}
-            self.#{foreign_key} = val.id
+            write_attribute(:#{foreign_key}, val.id)
           end
         end
 
